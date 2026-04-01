@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Concord Isn't Looking · Prediction Exchange · EVE Frontier</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --void: #08090c; --surface: #0e1018; --surface2: #141720;
+  --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.13);
+  --eve-gold: #c9922a; --eve-gold-dim: rgba(201,146,42,0.15); --eve-gold-glow: rgba(201,146,42,0.3);
+  --cyan: #3ecfcf; --cyan-dim: rgba(62,207,207,0.12);
+  --red: #e04040; --red-dim: rgba(224,64,64,0.13);
+  --green: #3ec87a; --green-dim: rgba(62,200,122,0.12);
+  --text: #d4d8e2; --text-dim: #626a7a;
+}
+html, body { height: 100%; background: var(--void); font-family: 'Syne', sans-serif; color: var(--text); }
+.shell { min-height: 100vh; }
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 20px; border-bottom: 1px solid var(--border2); background: var(--surface);
+}
+.logo { display: flex; align-items: center; gap: 12px; }
+.leeroy-face {
+  width: 36px; height: 36px; border: 1.5px solid var(--eve-gold); border-radius: 2px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden;
+}
+.leeroy-svg { width: 32px; height: 32px; }
+.logo-text { display: flex; flex-direction: column; }
+.logo-name { font-size: 14px; font-weight: 800; letter-spacing: 0.06em; color: #fff; line-height: 1.1; }
+.logo-sub { font-size: 10px; color: var(--text-dim); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 2px; }
+.topbar-right { display: flex; align-items: center; gap: 14px; }
+.net-pill { font-family: 'Space Mono', monospace; font-size: 10px; padding: 3px 10px; border: 1px solid rgba(62,207,207,0.3); color: var(--cyan); border-radius: 2px; letter-spacing: 0.05em; }
+.connect-btn { font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 600; padding: 6px 16px; background: var(--eve-gold-dim); border: 1px solid var(--eve-gold); color: var(--eve-gold); cursor: pointer; border-radius: 2px; letter-spacing: 0.05em; transition: background 0.15s; }
+.connect-btn:hover { background: var(--eve-gold-glow); }
+.leeroy-banner {
+  display: flex; align-items: center; gap: 12px; padding: 8px 20px;
+  background: rgba(201,146,42,0.08); border-bottom: 1px solid rgba(201,146,42,0.2);
+}
+.leeroy-quote { font-size: 11px; color: var(--eve-gold); font-family: 'Space Mono', monospace; letter-spacing: 0.05em; }
+.leeroy-attr { font-size: 10px; color: var(--text-dim); font-family: 'Space Mono', monospace; margin-left: auto; white-space: nowrap; }
+.stats-strip { display: flex; border-bottom: 1px solid var(--border); background: var(--surface); overflow-x: auto; }
+.stat-item { padding: 10px 20px; border-right: 1px solid var(--border); white-space: nowrap; flex-shrink: 0; }
+.stat-label { font-size: 10px; color: var(--text-dim); letter-spacing: 0.1em; text-transform: uppercase; font-family: 'Space Mono', monospace; }
+.stat-val { font-size: 15px; font-weight: 700; color: #fff; margin-top: 2px; }
+.stat-val.gold { color: var(--eve-gold); }
+.stat-val.cyan { color: var(--cyan); }
+.stat-val.green { color: var(--green); }
+.main { display: grid; grid-template-columns: 1fr 340px; min-height: calc(100vh - 140px); }
+.markets-col { border-right: 1px solid var(--border); }
+.section-head { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.section-title { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); }
+.filter-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.filter-btn { font-size: 10px; font-family: 'Space Mono', monospace; padding: 3px 10px; border: 1px solid var(--border2); background: transparent; color: var(--text-dim); cursor: pointer; border-radius: 2px; transition: all 0.12s; }
+.filter-btn.active { border-color: var(--eve-gold); color: var(--eve-gold); background: var(--eve-gold-dim); }
+.filter-btn:hover:not(.active) { color: var(--text); }
+.market-card { padding: 18px 20px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.1s; border-left: 2px solid transparent; }
+.market-card:hover { background: var(--surface2); }
+.market-card.selected { background: var(--surface2); border-left: 2px solid var(--eve-gold); }
+.mc-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+.mc-cat { font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; font-family: 'Space Mono', monospace; padding: 2px 8px; border-radius: 2px; flex-shrink: 0; }
+.cat-pvp { background: var(--red-dim); color: var(--red); border: 1px solid rgba(224,64,64,0.2); }
+.cat-econ { background: var(--eve-gold-dim); color: var(--eve-gold); border: 1px solid rgba(201,146,42,0.2); }
+.cat-geo { background: var(--cyan-dim); color: var(--cyan); border: 1px solid rgba(62,207,207,0.2); }
+.cat-infra { background: var(--green-dim); color: var(--green); border: 1px solid rgba(62,200,122,0.2); }
+.mc-title { font-size: 14px; font-weight: 600; color: #fff; line-height: 1.35; flex: 1; }
+.mc-odds { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.odds-bar { flex: 1; height: 6px; background: var(--border); border-radius: 1px; overflow: hidden; }
+.odds-fill { height: 100%; border-radius: 1px; }
+.fill-yes { background: var(--green); }
+.fill-no { background: var(--red); }
+.odds-label-yes { font-size: 13px; font-weight: 700; color: var(--green); font-family: 'Space Mono', monospace; min-width: 36px; }
+.odds-label-no { font-size: 13px; font-weight: 700; color: var(--red); font-family: 'Space Mono', monospace; min-width: 36px; text-align: right; }
+.mc-meta { display: flex; gap: 16px; flex-wrap: wrap; }
+.mc-meta-item { font-size: 11px; color: var(--text-dim); font-family: 'Space Mono', monospace; }
+.mc-meta-item span { color: var(--text); }
+.detail-col { background: var(--surface); }
+.detail-inner { padding: 20px; }
+.detail-q { font-size: 16px; font-weight: 700; color: #fff; line-height: 1.4; margin-bottom: 16px; }
+.prob-display { text-align: center; padding: 16px 0 12px; }
+.prob-big { font-size: 52px; font-weight: 800; color: var(--green); font-family: 'Space Mono', monospace; line-height: 1; }
+.prob-big.no { color: var(--red); }
+.prob-sub { font-size: 11px; color: var(--text-dim); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 6px; }
+.trade-box { margin: 14px 0; }
+.trade-tabs { display: flex; border: 1px solid var(--border2); border-radius: 2px; overflow: hidden; margin-bottom: 12px; }
+.trade-tab { flex: 1; padding: 8px; text-align: center; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.12s; letter-spacing: 0.05em; background: transparent; border: none; color: var(--text-dim); }
+.trade-tab.yes.active { background: var(--green-dim); color: var(--green); }
+.trade-tab.no.active { background: var(--red-dim); color: var(--red); }
+.trade-tab:not(.active):hover { color: var(--text); }
+.input-label { font-size: 10px; color: var(--text-dim); letter-spacing: 0.1em; text-transform: uppercase; font-family: 'Space Mono', monospace; margin-bottom: 5px; }
+.token-input { display: flex; align-items: center; border: 1px solid var(--border2); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+.token-input input { flex: 1; background: transparent; border: none; outline: none; padding: 9px 12px; font-size: 14px; font-family: 'Space Mono', monospace; color: #fff; }
+.token-tag { padding: 9px 12px; background: var(--surface2); font-size: 11px; font-family: 'Space Mono', monospace; color: var(--eve-gold); border-left: 1px solid var(--border2); letter-spacing: 0.05em; }
+.est-row { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; font-family: 'Space Mono', monospace; }
+.est-row .lbl { color: var(--text-dim); }
+.est-row .val { color: var(--text); }
+.trade-btn { width: 100%; padding: 12px; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; border: 1px solid; cursor: pointer; border-radius: 2px; transition: all 0.15s; font-family: 'Syne', sans-serif; margin-top: 12px; }
+.trade-btn.yes-btn { background: var(--green-dim); border-color: var(--green); color: var(--green); }
+.trade-btn.yes-btn:hover { background: rgba(62,200,122,0.25); }
+.trade-btn.no-btn { background: var(--red-dim); border-color: var(--red); color: var(--red); }
+.trade-btn.no-btn:hover { background: rgba(224,64,64,0.25); }
+.divider { height: 1px; background: var(--border); margin: 14px 0; }
+.detail-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.ds-card { background: var(--surface2); border-radius: 2px; padding: 10px 12px; border: 1px solid var(--border); }
+.ds-label { font-size: 9px; color: var(--text-dim); letter-spacing: 0.1em; text-transform: uppercase; font-family: 'Space Mono', monospace; }
+.ds-val { font-size: 15px; font-weight: 700; color: #fff; margin-top: 3px; }
+.resolution-box { background: var(--surface2); border: 1px solid var(--border2); border-radius: 2px; padding: 12px; }
+.res-title { font-size: 10px; color: var(--text-dim); letter-spacing: 0.1em; text-transform: uppercase; font-family: 'Space Mono', monospace; margin-bottom: 8px; }
+.res-text { font-size: 12px; color: var(--text); line-height: 1.5; }
+.res-source { display: inline-block; margin-top: 6px; font-size: 10px; font-family: 'Space Mono', monospace; color: var(--cyan); border-bottom: 1px solid rgba(62,207,207,0.3); }
+.mini-chart { margin: 10px 0; }
+.mini-chart-label { font-size: 10px; color: var(--text-dim); font-family: 'Space Mono', monospace; margin-bottom: 6px; letter-spacing: 0.08em; }
+.rt-item { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border); }
+.rt-item:last-child { border-bottom: none; }
+.rt-side { font-size: 11px; font-weight: 700; font-family: 'Space Mono', monospace; }
+.rt-side.yes-t { color: var(--green); }
+.rt-side.no-t { color: var(--red); }
+.rt-addr { font-size: 10px; color: var(--text-dim); font-family: 'Space Mono', monospace; }
+.rt-amt { font-size: 11px; color: var(--eve-gold); font-family: 'Space Mono', monospace; }
+@media (max-width: 768px) {
+  .main { grid-template-columns: 1fr; }
+  .detail-col { border-top: 1px solid var(--border); }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <div class="logo">
+      <div class="leeroy-face">
+        <svg class="leeroy-svg" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" fill="#0e1018"/>
+          <rect x="10" y="6" width="12" height="11" rx="2" fill="#c9922a"/>
+          <rect x="13" y="9" width="2" height="2" fill="#08090c"/>
+          <rect x="17" y="9" width="2" height="2" fill="#08090c"/>
+          <rect x="13" y="13" width="6" height="1" fill="#08090c"/>
+          <rect x="8" y="8" width="3" height="6" rx="1" fill="#c9922a"/>
+          <rect x="21" y="8" width="3" height="6" rx="1" fill="#c9922a"/>
+          <rect x="11" y="17" width="10" height="9" rx="1" fill="#854F0B"/>
+          <rect x="9" y="18" width="3" height="7" rx="1" fill="#854F0B"/>
+          <rect x="20" y="18" width="3" height="7" rx="1" fill="#854F0B"/>
+          <rect x="11" y="26" width="4" height="4" rx="1" fill="#633806"/>
+          <rect x="17" y="26" width="4" height="4" rx="1" fill="#633806"/>
+          <rect x="6" y="4" width="4" height="3" rx="1" fill="#c9922a"/>
+          <rect x="22" y="4" width="4" height="3" rx="1" fill="#c9922a"/>
+          <rect x="14" y="3" width="4" height="5" rx="1" fill="#c9922a"/>
+          <line x1="3" y1="16" x2="9" y2="19" stroke="#c9922a" stroke-width="2" stroke-linecap="round"/>
+          <line x1="29" y1="16" x2="23" y2="19" stroke="#e04040" stroke-width="2" stroke-linecap="round"/>
+          <rect x="1" y="14" width="3" height="4" rx="1" fill="#854F0B"/>
+          <rect x="28" y="14" width="3" height="4" rx="1" fill="#e04040"/>
+        </svg>
+      </div>
+      <div class="logo-text">
+        <div class="logo-name">CONCORD ISN'T LOOKING</div>
+        <div class="logo-sub">Prediction Exchange · EVE Frontier</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="net-pill">STILLNESS · LIVE</div>
+      <button class="connect-btn" onclick="this.textContent=this.textContent==='Connect EVE Vault'?'0x5555...f456':'Connect EVE Vault'">Connect EVE Vault</button>
+    </div>
+  </div>
+
+  <div class="leeroy-banner">
+    <div class="leeroy-quote" id="leeroy-quote">"LEEEEEEEEROY JENKIIIIINS"</div>
+    <div class="leeroy-attr">— Leeroy Jenkins, 2005 · at least he had chicken</div>
+  </div>
+
+  <div class="stats-strip">
+    <div class="stat-item"><div class="stat-label">24h Volume</div><div class="stat-val gold">142,800 EVE</div></div>
+    <div class="stat-item"><div class="stat-label">Open Markets</div><div class="stat-val cyan">24</div></div>
+    <div class="stat-item"><div class="stat-label">Total Liquidity</div><div class="stat-val">1.2M EVE</div></div>
+    <div class="stat-item"><div class="stat-label">Resolved (7d)</div><div class="stat-val green">9</div></div>
+    <div class="stat-item"><div class="stat-label">Your Position</div><div class="stat-val gold">4,500 EVE</div></div>
+  </div>
+
+  <div class="main">
+    <div class="markets-col">
+      <div class="section-head">
+        <div class="section-title">Active Markets</div>
+        <div class="filter-row">
+          <button class="filter-btn active" onclick="setFilter(this)">All</button>
+          <button class="filter-btn" onclick="setFilter(this)">PvP</button>
+          <button class="filter-btn" onclick="setFilter(this)">Economy</button>
+          <button class="filter-btn" onclick="setFilter(this)">Geopolitics</button>
+          <button class="filter-btn" onclick="setFilter(this)">Infrastructure</button>
+        </div>
+      </div>
+
+      <div class="market-card selected" onclick="selectCard(this,0)">
+        <div class="mc-header">
+          <div class="mc-title">Will total killmail count on Stillness exceed 10,000 by end of April?</div>
+          <div class="mc-cat cat-pvp">PvP</div>
+        </div>
+        <div class="mc-odds">
+          <div class="odds-label-yes">68%</div>
+          <div class="odds-bar"><div class="odds-fill fill-yes" style="width:68%"></div></div>
+          <div class="odds-label-no">32%</div>
+        </div>
+        <div class="mc-meta">
+          <div class="mc-meta-item">Vol: <span>38,200 EVE</span></div>
+          <div class="mc-meta-item">Closes: <span>Apr 30</span></div>
+          <div class="mc-meta-item">Oracle: <span>killmail registry</span></div>
+        </div>
+      </div>
+
+      <div class="market-card" onclick="selectCard(this,1)">
+        <div class="mc-header">
+          <div class="mc-title">Will a single corp control &gt;5% of all registered Smart Assemblies by May 1?</div>
+          <div class="mc-cat cat-geo">Geopolitics</div>
+        </div>
+        <div class="mc-odds">
+          <div class="odds-label-yes">41%</div>
+          <div class="odds-bar"><div class="odds-fill fill-yes" style="width:41%"></div></div>
+          <div class="odds-label-no">59%</div>
+        </div>
+        <div class="mc-meta">
+          <div class="mc-meta-item">Vol: <span>21,500 EVE</span></div>
+          <div class="mc-meta-item">Closes: <span>May 1</span></div>
+          <div class="mc-meta-item">Oracle: <span>assembly registry</span></div>
+        </div>
+      </div>
+
+      <div class="market-card" onclick="selectCard(this,2)">
+        <div class="mc-header">
+          <div class="mc-title">Will a new stargate be registered in the Kronos cluster within 14 days?</div>
+          <div class="mc-cat cat-infra">Infrastructure</div>
+        </div>
+        <div class="mc-odds">
+          <div class="odds-label-yes">55%</div>
+          <div class="odds-bar"><div class="odds-fill fill-yes" style="width:55%"></div></div>
+          <div class="odds-label-no">45%</div>
+        </div>
+        <div class="mc-meta">
+          <div class="mc-meta-item">Vol: <span>14,800 EVE</span></div>
+          <div class="mc-meta-item">Closes: <span>Apr 14</span></div>
+          <div class="mc-meta-item">Oracle: <span>gate registry</span></div>
+        </div>
+      </div>
+
+      <div class="market-card" onclick="selectCard(this,3)">
+        <div class="mc-header">
+          <div class="mc-title">Will the average daily kill count drop below 50 in any 7-day window this month?</div>
+          <div class="mc-cat cat-pvp">PvP</div>
+        </div>
+        <div class="mc-odds">
+          <div class="odds-label-yes">29%</div>
+          <div class="odds-bar"><div class="odds-fill fill-yes" style="width:29%"></div></div>
+          <div class="odds-label-no">71%</div>
+        </div>
+        <div class="mc-meta">
+          <div class="mc-meta-item">Vol: <span>9,100 EVE</span></div>
+          <div class="mc-meta-item">Closes: <span>Apr 30</span></div>
+          <div class="mc-meta-item">Oracle: <span>killmail module</span></div>
+        </div>
+      </div>
+
+      <div class="market-card" onclick="selectCard(this,4)">
+        <div class="mc-header">
+          <div class="mc-title">Will total registered characters exceed 5,000 before server wipe?</div>
+          <div class="mc-cat cat-econ">Economy</div>
+        </div>
+        <div class="mc-odds">
+          <div class="odds-label-yes">77%</div>
+          <div class="odds-bar"><div class="odds-fill fill-yes" style="width:77%"></div></div>
+          <div class="odds-label-no">23%</div>
+        </div>
+        <div class="mc-meta">
+          <div class="mc-meta-item">Vol: <span>58,900 EVE</span></div>
+          <div class="mc-meta-item">Closes: <span>May 15</span></div>
+          <div class="mc-meta-item">Oracle: <span>character registry</span></div>
+        </div>
+      </div>
+
+      <div class="market-card" onclick="selectCard(this,5)">
+        <div class="mc-header">
+          <div class="mc-title">Will someone yolo-rush a gatecamp solo and survive this week?</div>
+          <div class="mc-cat cat-pvp">PvP</div>
+        </div>
+        <div class="mc-odds">
+          <div class="odds-label-yes">19%</div>
+          <div class="odds-bar"><div class="odds-fill fill-yes" style="width:19%"></div></div>
+          <div class="odds-label-no">81%</div>
+        </div>
+        <div class="mc-meta">
+          <div class="mc-meta-item">Vol: <span>6,600 EVE</span></div>
+          <div class="mc-meta-item">Closes: <span>Apr 7</span></div>
+          <div class="mc-meta-item">Oracle: <span>killmail module</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-col">
+      <div class="section-head">
+        <div class="section-title">Market Detail</div>
+        <div style="font-size:10px;color:var(--text-dim);font-family:'Space Mono',monospace;" id="market-id">ID: CIL-0012</div>
+      </div>
+      <div class="detail-inner">
+        <div class="detail-q" id="detail-q">Will total killmail count on Stillness exceed 10,000 by end of April?</div>
+        <div class="prob-display">
+          <div class="prob-big" id="prob-pct">68%</div>
+          <div class="prob-sub">probability YES</div>
+        </div>
+        <div class="mini-chart">
+          <div class="mini-chart-label">7d probability history</div>
+          <canvas id="sparkline" width="300" height="56"></canvas>
+        </div>
+        <div class="detail-stats">
+          <div class="ds-card"><div class="ds-label">Total Volume</div><div class="ds-val" id="d-vol">38,200</div></div>
+          <div class="ds-card"><div class="ds-label">Traders</div><div class="ds-val" id="d-traders">147</div></div>
+          <div class="ds-card"><div class="ds-label">Yes Pool</div><div class="ds-val" id="d-yes">25,976</div></div>
+          <div class="ds-card"><div class="ds-label">No Pool</div><div class="ds-val" id="d-no">12,224</div></div>
+        </div>
+        <div class="trade-box">
+          <div class="trade-tabs">
+            <button class="trade-tab yes active" id="tab-yes" onclick="setTab('yes')">YES</button>
+            <button class="trade-tab no" id="tab-no" onclick="setTab('no')">NO</button>
+          </div>
+          <div class="input-label">Amount</div>
+          <div class="token-input">
+            <input type="number" id="stake-input" value="500" min="1" oninput="updateEstimate()" />
+            <div class="token-tag">EVE</div>
+          </div>
+          <div class="est-row"><span class="lbl">Avg price</span><span class="val" id="avg-price">0.68 EVE/share</span></div>
+          <div class="est-row"><span class="lbl">Shares received</span><span class="val" id="shares-out">735</span></div>
+          <div class="est-row"><span class="lbl">Max payout</span><span class="val" id="max-payout">735 EVE</span></div>
+          <div class="est-row"><span class="lbl">Potential profit</span><span class="val" id="profit" style="color:var(--green)">+235 EVE</span></div>
+          <button class="trade-btn yes-btn" id="trade-btn" onclick="placeTrade()">Buy YES</button>
+        </div>
+        <div class="divider"></div>
+        <div class="resolution-box">
+          <div class="res-title">Resolution criteria</div>
+          <div class="res-text" id="res-text">Market resolves YES if the on-chain killmail count from the Stillness killmail module exceeds 10,000 total events on or before April 30, 2026 23:59 UTC.</div>
+          <div class="res-source" id="res-source">oracle: suix_queryEvents · killmail module</div>
+        </div>
+        <div class="divider"></div>
+        <div class="section-title" style="margin-bottom:10px">Recent trades</div>
+        <div id="trade-feed"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const markets = [
+  { id:"CIL-0012", q:"Will total killmail count on Stillness exceed 10,000 by end of April?", yes:68, vol:"38,200", traders:147, yesPool:"25,976", noPool:"12,224", res:"Market resolves YES if the on-chain killmail count from the Stillness killmail module exceeds 10,000 total events on or before April 30, 2026 23:59 UTC.", oracle:"suix_queryEvents · killmail module", spark:[52,55,58,61,60,65,68] },
+  { id:"CIL-0017", q:"Will a single corp control >5% of all registered Smart Assemblies by May 1?", yes:41, vol:"21,500", traders:88, yesPool:"8,815", noPool:"12,685", res:"Market resolves YES if any single Corporation on Stillness is the registered owner of ≥5% of all active Smart Assembly objects as of May 1, 2026 00:00 UTC.", oracle:"GET /smartassemblies · assembly registry", spark:[35,38,37,40,39,41,41] },
+  { id:"CIL-0019", q:"Will a new stargate be registered in the Kronos cluster within 14 days?", yes:55, vol:"14,800", traders:62, yesPool:"8,140", noPool:"6,660", res:"Market resolves YES if any gate registration event is emitted with a solar_system_id belonging to the Kronos cluster before Apr 14, 2026.", oracle:"suix_queryEvents · gate registry", spark:[40,44,48,50,52,54,55] },
+  { id:"CIL-0021", q:"Will the average daily kill count drop below 50 in any 7-day window this month?", yes:29, vol:"9,100", traders:41, yesPool:"2,639", noPool:"6,461", res:"Market resolves YES if any rolling 7-day window in April 2026 records a daily killmail average below 50.", oracle:"suix_queryEvents · killmail module", spark:[38,33,31,29,30,28,29] },
+  { id:"CIL-0008", q:"Will total registered characters exceed 5,000 before server wipe?", yes:77, vol:"58,900", traders:214, yesPool:"45,353", noPool:"13,547", res:"Market resolves YES if the character registry on Stillness contains ≥5,000 unique PlayerProfile objects before the next announced wipe date.", oracle:"GET /characters · character registry", spark:[60,63,66,68,71,74,77] },
+  { id:"CIL-0025", q:"Will someone yolo-rush a gatecamp solo and survive this week?", yes:19, vol:"6,600", traders:29, yesPool:"1,254", noPool:"5,346", res:"Market resolves YES if any single character engages 3+ hostiles at a gate and exits with hull intact per killmail module — no kills recorded against that character within the engagement window.", oracle:"suix_queryEvents · killmail module", spark:[22,20,21,19,18,20,19] }
+];
+
+const quotes = [
+  '"LEEEEEEEEROY JENKIIIIINS"',
+  '"OK champ, let\'s do this..."',
+  '"At least I have chicken."',
+  '"Stick to the plan!"',
+  '"Leeroy, you are just stupid as hell."',
+  '"Time\'s up, let\'s do this."'
+];
+
+let selectedIdx = 0, currentTab = 'yes';
+
+function setFilter(btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('leeroy-quote').textContent = quotes[Math.floor(Math.random() * quotes.length)];
+}
+
+function selectCard(el, idx) {
+  document.querySelectorAll('.market-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedIdx = idx; currentTab = 'yes';
+  renderDetail();
+}
+
+function setTab(t) {
+  currentTab = t;
+  document.getElementById('tab-yes').classList.toggle('active', t === 'yes');
+  document.getElementById('tab-no').classList.toggle('active', t === 'no');
+  document.getElementById('trade-btn').textContent = 'Buy ' + t.toUpperCase();
+  document.getElementById('trade-btn').className = 'trade-btn ' + (t === 'yes' ? 'yes-btn' : 'no-btn');
+  updateEstimate();
+}
+
+function updateEstimate() {
+  const m = markets[selectedIdx];
+  const amt = parseFloat(document.getElementById('stake-input').value) || 0;
+  const prob = currentTab === 'yes' ? m.yes / 100 : (100 - m.yes) / 100;
+  const shares = amt > 0 ? Math.round(amt / prob) : 0;
+  const profit = shares - amt;
+  document.getElementById('avg-price').textContent = prob.toFixed(2) + ' EVE/share';
+  document.getElementById('shares-out').textContent = shares.toLocaleString();
+  document.getElementById('max-payout').textContent = shares.toLocaleString() + ' EVE';
+  const profEl = document.getElementById('profit');
+  profEl.textContent = (profit >= 0 ? '+' : '') + Math.round(profit).toLocaleString() + ' EVE';
+  profEl.style.color = profit >= 0 ? 'var(--green)' : 'var(--red)';
+}
+
+function renderDetail() {
+  const m = markets[selectedIdx];
+  document.getElementById('detail-q').textContent = m.q;
+  document.getElementById('market-id').textContent = 'ID: ' + m.id;
+  const probEl = document.getElementById('prob-pct');
+  probEl.textContent = m.yes + '%';
+  probEl.className = 'prob-big' + (m.yes >= 50 ? '' : ' no');
+  document.getElementById('d-vol').textContent = m.vol;
+  document.getElementById('d-traders').textContent = m.traders;
+  document.getElementById('d-yes').textContent = m.yesPool;
+  document.getElementById('d-no').textContent = m.noPool;
+  document.getElementById('res-text').textContent = m.res;
+  document.getElementById('res-source').textContent = 'oracle: ' + m.oracle;
+  setTab('yes');
+  drawSparkline(m.spark);
+  renderTrades(m.yes);
+}
+
+function drawSparkline(data) {
+  const cv = document.getElementById('sparkline');
+  const ctx = cv.getContext('2d');
+  const w = cv.offsetWidth || 280, h = 56;
+  cv.width = w * 2; cv.height = h * 2; ctx.scale(2, 2);
+  ctx.clearRect(0, 0, w, h);
+  const min = Math.min(...data) - 5, max = Math.max(...data) + 5;
+  const pts = data.map((v, i) => [i * (w / (data.length - 1)), h - ((v - min) / (max - min)) * (h - 8) - 4]);
+  ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+  for (let i = 1; i < pts.length; i++) {
+    const cp = [(pts[i-1][0] + pts[i][0]) / 2, pts[i-1][1]];
+    ctx.bezierCurveTo(cp[0], cp[1], cp[0], pts[i][1], pts[i][0], pts[i][1]);
+  }
+  ctx.strokeStyle = '#3ec87a'; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.lineTo(pts[pts.length-1][0], h); ctx.lineTo(pts[0][0], h); ctx.closePath();
+  ctx.fillStyle = 'rgba(62,200,122,0.1)'; ctx.fill();
+  const last = pts[pts.length - 1];
+  ctx.beginPath(); ctx.arc(last[0], last[1], 3, 0, Math.PI * 2);
+  ctx.fillStyle = '#3ec87a'; ctx.fill();
+}
+
+const addrs = ['0x5555...f456','0xeb6b...c16f','0x8a3c...d21a','0x2f91...b88c','0xd447...7e30','0x1c0f...aa92'];
+function renderTrades(yp) {
+  const feed = document.getElementById('trade-feed'); feed.innerHTML = '';
+  for (let i = 0; i < 6; i++) {
+    const s = Math.random() * 100 < yp ? 'yes' : 'no';
+    const amt = (Math.floor(Math.random() * 19 + 1) * 100);
+    const mins = [2, 8, 14, 21, 35, 52][i];
+    const d = document.createElement('div'); d.className = 'rt-item';
+    d.innerHTML = `<div><div class="rt-side ${s}-t">${s.toUpperCase()}</div><div class="rt-addr">${addrs[i]}</div></div><div style="text-align:right"><div class="rt-amt">${amt.toLocaleString()} EVE</div><div class="rt-addr">${mins}m ago</div></div>`;
+    feed.appendChild(d);
+  }
+}
+
+function placeTrade() {
+  const btn = document.getElementById('trade-btn'), orig = btn.textContent;
+  btn.textContent = 'LEEEEEROY...'; btn.disabled = true;
+  setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 1800);
+}
+
+renderDetail();
+setTimeout(() => drawSparkline(markets[0].spark), 100);
+</script>
+</body>
+</html>
